@@ -9,13 +9,15 @@
 # Notes:
 #
 #
-exec > >(tee $LOGFILE)
-exec 2>&1
 
 VERSION="1.0"
 LOGFILE="~/Mint13-Install-Log.txt"
 TEMPLOG="/tmp/Mint13-Temp-Log.txt"
 PPAs=""
+
+touch $LOGFILE
+exec > >(tee $LOGFILE)
+exec 2>&1
 
 MINTVERSION=`lsb_release -cs`
 echo "################################################################################"
@@ -46,11 +48,11 @@ log() {
 add-apt-repository -y ppa:danielrichter2007/grub-customizer
 PPAs=$PPAs" grub-customizer"
 
-# Handbrake (PPA release not avail yet)
+# Handbrake
 #sudo apt-add-repository ppa:stebbins/handbrake-releases
 #sudo apt-add-repository ppa:stebbins/handbrake-snapshots
 #sudo apt-get update && sudo apt-get install handbrake-gtk
-add-apt-repository -y stebbins/handbrake-snapshots
+add-apt-repository -y stebbins/handbrake-releases
 PPAs=$PPAs" handbrake-gtk"
 
 # Jupiter
@@ -71,7 +73,7 @@ PKGS=$SECURITY && install && log
 GAMES="playonlinux openttd openttd-opensfx wesnoth"
 PKGS=$GAMES && install && log
 
-PHOTOGRAPHY="shotwell gimp gimp-data gimp-data-extras pinta mypainti hugin"
+PHOTOGRAPHY="shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 PKGS=$PHOTOGRAPHY && install && log
 
 CLIAPPS="tmux tcsh zsh zsh-doc htop"
@@ -104,10 +106,10 @@ PKGS=$VIDEO_TOOLS && install && log
 WWW="kompozer bluefish chromium-browser mint-flashplugin mpack clamz"
 PKGS=$WWW && install && log
 
-COMMS="skype pidgin pidgin-otr pidgin-encryption"
+COMMS="pidgin pidgin-otr pidgin-encryption" #skype removed repo version is a beta
 PKGS=$COMMS && install && log
 
-VIRTUALIZATION="virtualbox-qt gns3"
+VIRTUALIZATION="virtualbox-qt virtualbox-guest-additions-iso gns3"
 PKGS=$VIRTUALIZATION && install && log
 
 FILE_TOOLS="rar unrar p7zip-rar p7zip zip unzip sharutils uudeview mpack lha cabextract mdbtools mdbtools-doc mdbtools-gmdb pdfshuffler"
@@ -121,6 +123,9 @@ PKGS=$GOOGLEEARTH && install && log
 
 CODECS="ffmpeg flac libmad0 totem-mozilla easytag icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
 PKGS=$CODECS && install && log
+
+wget -O skype http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
+PKGS="skype-ubuntu_4.0.0.8-1_amd64.deb" && dpkg -i skype-ubuntu_4.0.0.8-1_amd64.deb && RETVAL=$? && log
 
 PKGS=$PPAs && install && log
 
@@ -180,7 +185,3 @@ echo "Detailed information can be found within $LOGFILE"
 echo
 echo "Please restart your session to complete."
 echo "################################################################################"
-
-
-#wget -O skype http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
-#sudo dpkg -i skype-ubuntu_4.0.0.8-1_amd64.deb
