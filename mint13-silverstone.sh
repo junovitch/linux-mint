@@ -9,13 +9,14 @@
 # Notes:
 #
 #
-exec > >(tee $LOGFILE)
-exec 2>&1
 
 VERSION="1.0"
 LOGFILE="~/Mint13-Install-Log.txt"
 TEMPLOG="/tmp/Mint13-Temp-Log.txt"
 PPAs=""
+
+exec > >(tee $LOGFILE)
+exec 2>&1
 
 MINTVERSION=`lsb_release -cs`
 echo "################################################################################"
@@ -60,6 +61,8 @@ PPAs=$PPAs" nvidia-current nvidia-settings"
 add-apt-repository -y ppa:happy-neko/ps3mediaserver
 PPAs=$PPAs" ps3mediaserver"
 
+
+apt-get update
 PKGS=$PPAs && install && log
 
 
