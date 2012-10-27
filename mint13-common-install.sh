@@ -36,9 +36,9 @@ install() {
 
 log() {
     if [ $RETVAL -eq 0 ]; then
-        echo -e "[  OK   ] - RETURN $RETVAL FOR $PKGS" >> $TEMPLOG
+        echo "[  OK   ] - RETURN $RETVAL FOR $PKGS" >> $TEMPLOG
     else
-        echo -e "[FAILURE] - RETURN $RETVAL FOR $PKGS" >> $TEMPLOG
+        echo "[FAILURE] - RETURN $RETVAL FOR $PKGS" >> $TEMPLOG
     fi
 }
 
@@ -124,8 +124,8 @@ PKGS=$GOOGLEEARTH && install && log
 CODECS="ffmpeg flac libmad0 totem-mozilla easytag icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
 PKGS=$CODECS && install && log
 
-wget -O skype http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
-PKGS="skype-ubuntu_4.0.0.8-1_amd64.deb" && dpkg -i skype-ubuntu_4.0.0.8-1_amd64.deb && RETVAL=$? && log
+wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
+PKGS="skype" && dpkg -i /tmp/skype.deb; apt-get -f install && RETVAL=$? && log && rm /tmp/skype.deb
 
 PKGS=$PPAs && install && log
 
@@ -133,16 +133,16 @@ PKGS=$PPAs && install && log
 # Finally end with a cleanup
 apt-get -y autoclean
 
-egrep '^none\t\t/tmp\t\ttmpfs' /etc/fstab
+egrep '/tmp' /etc/fstab > /dev/null
 RETVAL=$?
 if [ $RETVAL -eq 0 ]; then
-    echo -e "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $TEMPLOG
+    echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $TEMPLOG
 else
-    echo -e "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-    echo -e "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-    echo -e "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $TEMPLOG
-    cat /etc/fstab
+    echo "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
+    echo "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
+    echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $TEMPLOG
 fi
+cat /etc/fstab
 
 # 1. Install prerequisite packages, this is already covered in initial setup script
 #sudo apt-get install libpcsclite1 pcscd pcsc-tools
@@ -150,9 +150,9 @@ fi
 # 2. Install card reader drivers.
 # http://support.identive-infrastructure.com/download_scm/download_scm.php?lang=1
 SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
-find /usr/local -regex "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
+find /usr/local -name "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
 tar xvzf /tmp/$SCM_PKG -C /tmp
-/tmp/scmccid_5.0.21_linux/install.sh
+cd /tmp/scmccid_5.0.21_linux/ && ./install.sh
 RETVAL=$?
 PKGS=$SCM_PKG
 log
@@ -162,14 +162,14 @@ log
 # http://www.forge.mil/Resources-Firefox.html
 CACKEY="cackey0.6.5-1_amd64.deb"
 mkdir /usr/lib64
-find /usr/local -regex "$CACKEY" -print0 | xargs -0 dpkg -i
+find /usr/local -name "$CACKEY" -print0 | xargs -0 dpkg -i
 RETVAL=$?
 PKGS=$CACKEY
 log
 
 # Firefox
 FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
-find /usr/local -regex "$FIREFOX" -print0 | xargs -0 firefox
+find /usr/local -name "$FIREFOX" -print0 | xargs -0 firefox
 RETVAL=$?
 PKGS=$FIREFOX
 log
