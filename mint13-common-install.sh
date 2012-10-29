@@ -52,7 +52,7 @@ PPAs=$PPAs" grub-customizer"
 #sudo apt-add-repository ppa:stebbins/handbrake-releases
 #sudo apt-add-repository ppa:stebbins/handbrake-snapshots
 #sudo apt-get update && sudo apt-get install handbrake-gtk
-add-apt-repository -y stebbins/handbrake-releases
+add-apt-repository -y ppa:stebbins/handbrake-snapshots
 PPAs=$PPAs" handbrake-gtk"
 
 # Jupiter
