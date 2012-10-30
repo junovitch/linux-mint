@@ -1,52 +1,97 @@
 #!/bin/bash
-# Post Installation for GNU/Linux Mint Maya (Version 13)
-#
-# Jason Unovitch - October 2012
-# GPL
-#
-# Syntax: sudo ./Mint13-Install.sh
-#
-# Notes:
-#
-#
 
-VERSION="1.0"
-LOGFILE="~/Mint13-Install-Log.txt"
-TEMPLOG="/tmp/Mint13-Temp-Log.txt"
+################################################################################
+##  Apt-get Install Script  ####################################################
+################################################################################
+# Written in 2012 by Jason Unovitch                                            #
+#   oneshotuno@yahoo.com                                                       #
+#   https://github.com/junovitch                                               #
+#                                                                              #
+# To the extent possible under law, the author(s) have dedicated all copyright #
+# and related and neighboring rights to this software to the public domain     #
+# worldwide. This software is distributed without any warranty.                #
+#                                                                              #
+# You should have received a copy of the CC0 Public Domain Dedication along    #
+# with this software.                                                          #
+# If not, see <http://creativecommons.org/publicdomain/zero/1.0/>              #
+################################################################################
+
+################################################################################
+##  LOGFILES  ##################################################################
+################################################################################
+
+FAILBRIEF="/tmp/install-log.txt"
+TEMPLOG="/tmp/temp-log.txt"
+FAILDETAILS="/tmp/failures.txt"
+SUCCESSLOG="/tmp/success.txt"
+
+echo -n '' > $FAILBRIEF
+echo -n '' > $TEMPLOG
+echo -n '' > $FAILDETAILS
+echo -n '' > $SUCCESSLOG
+
+################################################################################
+##  COMMANDS  ##################################################################
+################################################################################
+
+DISTRO=`lsb_release -d | cut -d ":" -f "2" | sed -e 's/^[ \t]*//'`
+HOSTNAME=`hostname`
+PKG_ADD="apt-get -y -f install"
+
+################################################################################
+##  BLANK PACKAGE LISTS  #######################################################
+################################################################################
+
+PKGS=()
 PPAs=""
 
-touch $LOGFILE
-exec > >(tee $LOGFILE)
-exec 2>&1
+################################################################################
+##  SUBROUTINES  ###############################################################
+################################################################################
 
-MINTVERSION=`lsb_release -cs`
-echo "################################################################################"
-echo "Starting updates for $MINTVERSION"
-# Check for root
-if [ $EUID -ne 0 ]; then
-    echo "Need root privileges: Run using # sudo $0" 1>&2
-    exit 1
-fi
-echo "################################################################################"
+pkg_push() {
+    PKGS=("${PKGS[@]}" "$1")
+}
 
-install() {
-    apt-get -y install $PKGS
+install_main() {
+for PKG in ${PKGS[@]}
+do
+    echo -n "Installing: $PKG"
+    $PKG_ADD $PKG > "$TEMPLOG"
     RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+        echo -e "\033[60C[  OK   ]"
+        echo -e "$PKG " >> "$SUCCESSLOG"
+    else
+        echo -e "\033[60C[FAILURE]"
+        echo "[FAILURE] - Return $RETVAL for $PKG" >> "$FAILBRIEF"
+        cat "$TEMPLOG" >> "$FAILDETAILS"
+    fi
+done
 }
 
-log() {
-    if [ $RETVAL -eq 0 ]; then
-        echo "[  OK   ] - RETURN $RETVAL FOR $PKGS" >> $TEMPLOG
-    else
-        echo "[FAILURE] - RETURN $RETVAL FOR $PKGS" >> $TEMPLOG
-    fi
+config_tmpfs() {
+egrep '/tmp' /etc/fstab > /dev/null
+RETVAL=$?
+if [ $RETVAL -eq 0 ]; then
+    echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $FAILBRIEF
+else
+    echo -e "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
+    echo -e "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
+    echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $FAILBRIEF
+fi
+cat /etc/fstab
 }
+
+################################################################################
+##  USER DEFINED PACKAGES  #####################################################
+################################################################################
 
 # Grub Customizer
 # sudo add-apt-repository ppa:danielrichter2007/grub-customizer
 # sudo apt-get update && sudo apt-get install grub-customizer
 add-apt-repository -y ppa:danielrichter2007/grub-customizer
-PPAs=$PPAs" grub-customizer"
+PPAs=PPAs" grub-customizer"
 
 # Handbrake
 #sudo apt-add-repository ppa:stebbins/handbrake-releases
@@ -59,129 +104,143 @@ PPAs=$PPAs" handbrake-gtk"
 add-apt-repository ppa:webupd8team/jupiter
 PPAs=$PPAs" jupiter"
 
-# Update Package List
-apt-get -y update
+# Security
+pkg_push "clamav clamtk ecryptfs-utils encfs gufw fail2ban chkrootkit rkhunter openssh-server ssh-import-id openssh-blacklist openssh-blacklist-extra openvpn kismet wireshark tshark nmap putty"
 
-# Update all base system packages
-#apt-get -y dist-upgrade
-apt-get -y upgrade
+# Games
+pkg_push "playonlinux openttd openttd-opensfx"
 
-# Install packages
-SECURITY="clamav clamtk ecryptfs-utils encfs gufw fail2ban chkrootkit rkhunter openssh-server ssh-import-id openssh-blacklist openssh-blacklist-extra openvpn kismet wireshark tshark nmap putty"
-PKGS=$SECURITY && install && log
+# Photography
+pkg_push "shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 
-GAMES="playonlinux openttd openttd-opensfx wesnoth"
-PKGS=$GAMES && install && log
+# CLI Applications
+pkg_push "tmux tcsh zsh zsh-doc htop"
 
-PHOTOGRAPHY="shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
-PKGS=$PHOTOGRAPHY && install && log
+# System Applications
+pkg_push "gparted blueman synaptic preload etherwake wakeonlan"
 
-CLIAPPS="tmux tcsh zsh zsh-doc htop"
-PKGS=$CLIAPPS && install && log
+# Development tools and applications
+pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
 
-SYSTEMAPPS="gparted blueman synaptic preload etherwake wakeonlan"
-PKGS=$SYSTEMAPPS && install && log
+# Java
+pkg_push "openjdk-7-jre icedtea-7-plugin"
 
-DEVELOPMENT="build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
-PKGS=$DEVELOPMENT && install && log
+# HP Printer Tools
+pkg_push "hplip-gui"
 
-JAVA="openjdk-7-jre icedtea-7-plugin"
-PKGS=$JAVA && install && log
+# Basic Smartcard Support
+pkg_push "libpcsclite1 pcscd pcsc-tools"
 
-DRIVERS="hplip-gui"
-PKGS=$DRIVERS && install && log
+# Media
+pkg_push "vlc banshee banshee-extension-ampache"
 
-SMARTCARD="libpcsclite1 pcscd pcsc-tools"
-PKGS=$SMARTCARD && install && log
+# Audio Tools
+pkg_push "audacity pavucontrol"
 
-MEDIA="vlc banshee banshee-extension-ampache"
-PKGS=$MEDIA && install && log
+# Video Tools
+pkg_push "blender avidemux cheese devede"
 
-AUDIO_TOOLS="audacity pavucontrol"
-PKGS=$AUDIO_TOOLS && install && log
+# Web Applications
+pkg_push "kompozer bluefish mpack clamz"
 
-VIDEO_TOOLS="blender avidemux cheese devede"
-PKGS=$VIDEO_TOOLS && install && log
+# Communication
+pkg_push "pidgin pidgin-otr pidgin-encryption skype"
 
-WWW="kompozer bluefish chromium-browser mint-flashplugin mpack clamz"
-PKGS=$WWW && install && log
+# Virtualization
+pkg_push "virtualbox-qt virtualbox-guest-additions-iso gns3"
 
-COMMS="pidgin pidgin-otr pidgin-encryption" #skype removed repo version is a beta
-PKGS=$COMMS && install && log
+# File Tools
+pkg_push "rar unrar p7zip-rar p7zip zip unzip sharutils uudeview mpack lha cabextract mdbtools mdbtools-doc mdbtools-gmdb pdfshuffler"
 
-VIRTUALIZATION="virtualbox-qt virtualbox-guest-additions-iso gns3"
-PKGS=$VIRTUALIZATION && install && log
+# Desktop Appls
+pkg_push "conky-all gtk-redshift"
 
-FILE_TOOLS="rar unrar p7zip-rar p7zip zip unzip sharutils uudeview mpack lha cabextract mdbtools mdbtools-doc mdbtools-gmdb pdfshuffler"
-PKGS=$FILE_TOOLS && install && log
+# Google Earth
+pkg_push "lsb-core googleearth-package"
 
-DESKTOP="conky-all gtk-redshift"
-PKGS=$DESKTOP && install && log
+# Codecs
+pkg_push "ffmpeg flac libmad0 totem-mozilla easytag icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
 
-GOOGLEEARTH="lsb-core googleearth-package"
-PKGS=$GOOGLEEARTH && install && log
+# Manual Skype Install if Repo version is old
+#wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
+#$PKG_ADD skype" && dpkg -i /tmp/skype.deb; apt-get -f install && RETVAL=$? && log && rm /tmp/skype.deb
 
-CODECS="ffmpeg flac libmad0 totem-mozilla easytag icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
-PKGS=$CODECS && install && log
-
-wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
-PKGS="skype" && dpkg -i /tmp/skype.deb; apt-get -f install && RETVAL=$? && log && rm /tmp/skype.deb
-
-PKGS=$PPAs && install && log
-
-
-# Finally end with a cleanup
-apt-get -y autoclean
-
-egrep '/tmp' /etc/fstab > /dev/null
-RETVAL=$?
-if [ $RETVAL -eq 0 ]; then
-    echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $TEMPLOG
-else
-    echo "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-    echo "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-    echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $TEMPLOG
-fi
-cat /etc/fstab
+# PPAs installed last
+pkg_push "$PPAs"
 
 # 1. Install prerequisite packages, this is already covered in initial setup script
 #sudo apt-get install libpcsclite1 pcscd pcsc-tools
 
 # 2. Install card reader drivers.
 # http://support.identive-infrastructure.com/download_scm/download_scm.php?lang=1
-SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
-find /usr/local -name "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
-tar xvzf /tmp/$SCM_PKG -C /tmp
-cd /tmp/scmccid_5.0.21_linux/ && ./install.sh
-RETVAL=$?
-PKGS=$SCM_PKG
-log
+#SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
+#find /usr/local -name "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
+#tar xvzf /tmp/$SCM_PKG -C /tmp
+#cd /tmp/scmccid_5.0.21_linux/ && ./install.sh
+#RETVAL=$?
+#PKGS=$SCM_PKG
+#log
 
 # 3. DISA software can be found below, both cackey and firefox_extensions are required (CAC Login required to download, get beforehand)
 # https://software.forge.mil/sf/frs/do/listReleases/projects.community_cac/frs.cackey
-# http://www.forge.mil/Resources-Firefox.html
-CACKEY="cackey0.6.5-1_amd64.deb"
-mkdir /usr/lib64
-find /usr/local -name "$CACKEY" -print0 | xargs -0 dpkg -i
-RETVAL=$?
-PKGS=$CACKEY
-log
+## http://www.forge.mil/Resources-Firefox.html
+#CACKEY="cackey0.6.5-1_amd64.deb"
+#mkdir /usr/lib64
+#find /usr/local -name "$CACKEY" -print0 | xargs -0 dpkg -i
+#RETVAL=$?
+#PKGS=$CACKEY
+#log
 
 # Firefox
-FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
-find /usr/local -name "$FIREFOX" -print0 | xargs -0 firefox
-RETVAL=$?
-PKGS=$FIREFOX
-log
+#FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
+#find /usr/local -name "$FIREFOX" -print0 | xargs -0 firefox
+#RETVAL=$?
+#PKGS=$FIREFOX
+#log
+
+################################################################################
+##  MAIN PROGRAM  ##############################################################
+################################################################################
+
+echo "################################################################################"
+echo "Starting system updates on $DISTRO host $HOSTNAME" 
+echo "################################################################################"
+sleep 3
+
+#Check for root
+if [ $EUID -ne 0 ]; then
+    echo "Need root privileges: Run using # sudo $0" 1>&2
+    exit 1
+fi
+
+# Update Package List
+apt-get -y update
+
+# Update all base system packages
+apt-get -y upgrade
+
+echo "################################################################################"
+echo "Done, install user programs" 
+echo "################################################################################"
+
+# Run Main subroutine
+install_main
+
+# Cleanup
+apt-get -y autoclean
+
+# Configure tmpfs in ramdisk
+config_tmpfs
 
 # End of script
 echo "################################################################################"
 echo "Installation Completed"
 echo
-echo "Summary"
-cat $TEMPLOG && rm $TEMPLOG
-echo 
-echo "Detailed information can be found within $LOGFILE"
+echo "Successfully installed:"
+cat $SUCCESSLOG
 echo
+echo "Failures"
+cat $FAILBRIEF
+echo 
 echo "Please restart your session to complete."
 echo "################################################################################"
