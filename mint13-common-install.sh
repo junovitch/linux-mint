@@ -54,44 +54,67 @@ pkg_push() {
 }
 
 install_main() {
-for PKG in ${PKGS[@]}
-do
-    echo -n "Installing: $PKG"
-    $PKG_ADD $PKG > "$TEMPLOG"
-    RETVAL=$?
+    for PKG in ${PKGS[@]}
+        do
+            $PKG_ADD $PKG | tee "$TEMPLOG"
+            RETVAL=$?
+            log
+        done
+}
+
+log() {
     if [ $RETVAL -eq 0 ]; then
-        echo -e "\033[60C[  OK   ]"
-        echo -e "$PKG " >> "$SUCCESSLOG"
+        echo -ne "$PKG " >> "$SUCCESSLOG"
     else
-        echo -e "\033[60C[FAILURE]"
         echo "[FAILURE] - Return $RETVAL for $PKG" >> "$FAILBRIEF"
         cat "$TEMPLOG" >> "$FAILDETAILS"
     fi
-done
 }
 
 config_tmpfs() {
-egrep '/tmp' /etc/fstab > /dev/null
-RETVAL=$?
-if [ $RETVAL -eq 0 ]; then
-    echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $FAILBRIEF
-else
-    echo -e "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-    echo -e "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-    echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $FAILBRIEF
-fi
-cat /etc/fstab
+    egrep '/tmp' /etc/fstab > /dev/null
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+        echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $FAILBRIEF
+    else
+        echo -e "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
+        echo -e "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
+        echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $FAILBRIEF
+    fi
+    cat /etc/fstab
 }
 
 ################################################################################
 ##  USER DEFINED PACKAGES  #####################################################
 ################################################################################
 
+if [ $HOSTNAME == "Silverstone" ]; then
+    # ZFS Support
+    # sudo add-apt-repository ppa:zfs-native/stable
+    # sudo apt-get update && sudo apt-get install ubuntu-zfs
+    add-apt-repository -y ppa:zfs-native/stable
+    PPAs=$PPAs" ubuntu-zfs"
+
+    # NVIDIA
+    # sudo apt-add-repository ppa:ubuntu-x-swat/x-updates
+    # sudo apt-get update && sudo apt-get install nvidia-current nvidia-settings
+    add-apt-repository ppa:ubuntu-x-swat/x-updates
+    PPAs=$PPAs" nvidia-current nvidia-settings"
+
+    # PS3 Media server
+    # https://help.ubuntu.com/community/Ps3MediaServer
+    # http://www.ps3mediaserver.org/forum/viewtopic.php?f=3&t=13046
+    # sudo add-apt-repository ppa:happy-neko/ps3mediaserver
+    # sudo apt-get update && sudo apt-get install ps3mediaserver
+    add-apt-repository -y ppa:happy-neko/ps3mediaserver
+    PPAs=$PPAs" ps3mediaserver"
+fi
+
 # Grub Customizer
 # sudo add-apt-repository ppa:danielrichter2007/grub-customizer
 # sudo apt-get update && sudo apt-get install grub-customizer
 add-apt-repository -y ppa:danielrichter2007/grub-customizer
-PPAs=PPAs" grub-customizer"
+PPAs=$PPAs" grub-customizer"
 
 # Handbrake
 #sudo apt-add-repository ppa:stebbins/handbrake-releases
@@ -114,7 +137,7 @@ pkg_push "playonlinux openttd openttd-opensfx"
 pkg_push "shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 
 # CLI Applications
-pkg_push "tmux tcsh zsh zsh-doc htop"
+pkg_push "tmux tcsh terminator zsh zsh-doc htop"
 
 # System Applications
 pkg_push "gparted blueman synaptic preload etherwake wakeonlan"
@@ -144,7 +167,7 @@ pkg_push "blender avidemux cheese devede"
 pkg_push "kompozer bluefish mpack clamz"
 
 # Communication
-pkg_push "pidgin pidgin-otr pidgin-encryption skype"
+pkg_push "pidgin pidgin-otr pidgin-encryption" #skype
 
 # Virtualization
 pkg_push "virtualbox-qt virtualbox-guest-additions-iso gns3"
@@ -156,14 +179,10 @@ pkg_push "rar unrar p7zip-rar p7zip zip unzip sharutils uudeview mpack lha cabex
 pkg_push "conky-all gtk-redshift"
 
 # Google Earth
-pkg_push "lsb-core googleearth-package"
+pkg_push "lsb-core googleearth"
 
 # Codecs
-pkg_push "ffmpeg flac libmad0 totem-mozilla easytag icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
-
-# Manual Skype Install if Repo version is old
-#wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
-#$PKG_ADD skype" && dpkg -i /tmp/skype.deb; apt-get -f install && RETVAL=$? && log && rm /tmp/skype.deb
+pkg_push "ffmpeg flac libmad0 totem-mozilla icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
 
 # PPAs installed last
 pkg_push "$PPAs"
@@ -173,30 +192,30 @@ pkg_push "$PPAs"
 
 # 2. Install card reader drivers.
 # http://support.identive-infrastructure.com/download_scm/download_scm.php?lang=1
-#SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
-#find /usr/local -name "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
-#tar xvzf /tmp/$SCM_PKG -C /tmp
-#cd /tmp/scmccid_5.0.21_linux/ && ./install.sh
-#RETVAL=$?
-#PKGS=$SCM_PKG
-#log
+SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
+find /usr/local -name "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
+tar xvzf /tmp/$SCM_PKG -C /tmp
+cd /tmp/scmccid_5.0.21_linux/ && ./install.sh | tee "$TEMPLOG"
+RETVAL=$?
+PKG=$SCM_PKG
+log
 
 # 3. DISA software can be found below, both cackey and firefox_extensions are required (CAC Login required to download, get beforehand)
 # https://software.forge.mil/sf/frs/do/listReleases/projects.community_cac/frs.cackey
 ## http://www.forge.mil/Resources-Firefox.html
-#CACKEY="cackey0.6.5-1_amd64.deb"
-#mkdir /usr/lib64
-#find /usr/local -name "$CACKEY" -print0 | xargs -0 dpkg -i
-#RETVAL=$?
-#PKGS=$CACKEY
-#log
+CACKEY="cackey0.6.5-1_amd64.deb"
+mkdir /usr/lib64
+find /usr/local -name "$CACKEY" -print0 | xargs -0 dpkg -i | tee "$TEMPLOG"
+RETVAL=$?
+PKG=$CACKEY
+log
 
-# Firefox
-#FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
-#find /usr/local -name "$FIREFOX" -print0 | xargs -0 firefox
-#RETVAL=$?
-#PKGS=$FIREFOX
-#log
+# Firefox Configs
+FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
+find /usr/local -name "$FIREFOX" -print0 | xargs -0 firefox
+RETVAL=$?
+PKG=$FIREFOX
+log
 
 ################################################################################
 ##  MAIN PROGRAM  ##############################################################
@@ -205,7 +224,6 @@ pkg_push "$PPAs"
 echo "################################################################################"
 echo "Starting system updates on $DISTRO host $HOSTNAME" 
 echo "################################################################################"
-sleep 3
 
 #Check for root
 if [ $EUID -ne 0 ]; then
@@ -225,6 +243,9 @@ echo "##########################################################################
 
 # Run Main subroutine
 install_main
+
+wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
+dpkg -i /tmp/skype.deb; apt-get -f install | tee "$TEMPLOG"; RETVAL=$?; log; rm /tmp/skype.deb
 
 # Cleanup
 apt-get -y autoclean
