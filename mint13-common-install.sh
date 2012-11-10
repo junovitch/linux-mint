@@ -217,6 +217,13 @@ RETVAL=$?
 PKG=$FIREFOX
 log
 
+# Put blu-ray support files in place (must be in /usr/local already)
+mkdir /etc/skel/.config/aacs/
+mkdir ~/.config/aacs/
+find /usr/local -name "KEYDB.cfg" -print0 | xargs -0 -I '{}' cp '{}' /etc/skel/.config/aacs/
+find /usr/local -name "KEYDB.cfg" -print0 | xargs -0 -I '{}' cp '{}' ~/.config/aacs/
+find /usr/local -name "libaacs.so.0" -print0 | xargs -0 -I '{}' cp '{}' /usr/lib64/
+
 ################################################################################
 ##  MAIN PROGRAM  ##############################################################
 ################################################################################
