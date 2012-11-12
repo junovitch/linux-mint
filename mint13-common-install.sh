@@ -140,7 +140,7 @@ pkg_push "shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 pkg_push "tmux tcsh terminator zsh zsh-doc htop"
 
 # System Applications
-pkg_push "gparted blueman synaptic preload etherwake wakeonlan"
+pkg_push "nfs-common gparted blueman synaptic preload etherwake wakeonlan"
 
 # Development tools and applications
 pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
