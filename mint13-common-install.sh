@@ -263,6 +263,9 @@ apt-get -y autoclean
 # Configure tmpfs in ramdisk
 config_tmpfs
 
+# Get themes
+git clone https://github.com/shimmerproject/Greybird /usr/share/themes/Greybird
+
 # End of script
 echo "################################################################################"
 echo "Installation Completed"
