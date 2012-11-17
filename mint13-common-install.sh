@@ -164,7 +164,7 @@ pkg_push "vlc banshee banshee-extension-ampache"
 pkg_push "audacity pavucontrol"
 
 # Video Tools
-pkg_push "blender avidemux cheese devede"
+pkg_push "blender avidemux cheese devede mkvtoolnix mkvtoolnix-gui"
 
 # Web Applications
 pkg_push "kompozer bluefish mpack clamz"
