@@ -131,7 +131,11 @@ add-apt-repository ppa:webupd8team/jupiter
 PPAs=$PPAs" jupiter"
 
 # Security
-pkg_push "clamav clamtk ecryptfs-utils encfs gufw fail2ban chkrootkit rkhunter openssh-server ssh-import-id openssh-blacklist openssh-blacklist-extra openvpn kismet wireshark tshark nmap putty"
+pkg_push "clamav clamtk ecryptfs-utils gufw fail2ban chkrootkit rkhunter openssh-server ssh-import-id openssh-blacklist openssh-blacklist-extra openvpn kismet wireshark tshark nmap putty"
+
+# Encfs Home directory support for FreeBSD/Linux cross compatibility
+# http://wiki.debian.org/TransparentEncryptionForHomeFolder
+pkg_push "encfs libpam-encfs libpam-mount"
 
 # Games
 pkg_push "playonlinux openttd openttd-opensfx"
