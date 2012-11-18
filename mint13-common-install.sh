@@ -273,6 +273,9 @@ config_tmpfs
 # Get themes
 git clone https://github.com/shimmerproject/Greybird /usr/share/themes/Greybird
 
+# Configure Printer(s)
+lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?zc=xju-printer -L "Jason's Printer" -m drv:///hpcups.drv/hp-photosmart_5510_series.ppd && cupsenable "Jason-HP-Photosmart-5510-series" && cupsaccept "Jason-HP-Photosmart-5510-series"
+
 # End of script
 echo "################################################################################"
 echo "Installation Completed"
