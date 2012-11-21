@@ -264,6 +264,10 @@ install_main
 wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
 dpkg -i /tmp/skype.deb; apt-get -f install | tee "$TEMPLOG"; RETVAL=$?; log; rm /tmp/skype.deb
 
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+apt-get update && apt-get install google-chrome-stable
+
 # Cleanup
 apt-get -y autoclean
 
