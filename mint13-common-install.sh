@@ -147,7 +147,7 @@ pkg_push "shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 pkg_push "tmux tcsh terminator zsh zsh-doc htop"
 
 # System Applications
-pkg_push "nfs-common gddrescue gparted blueman synaptic preload etherwake wakeonlan"
+pkg_push "remmina nfs-common gddrescue gparted blueman synaptic preload etherwake wakeonlan"
 
 # Development tools and applications
 pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
@@ -192,7 +192,7 @@ pkg_push "lsb-core googleearth"
 pkg_push "ffmpeg flac libmad0 totem-mozilla icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
 
 # Alt Desktops/WMs
-pkg_push "unity fvwm-crystal xmonad mint-meta-cinnamon mint-meta-mate"
+pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate"
 
 # PPAs installed last
 pkg_push "$PPAs"
