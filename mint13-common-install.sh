@@ -147,7 +147,7 @@ pkg_push "shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 pkg_push "tmux tcsh terminator zsh zsh-doc htop"
 
 # System Applications
-pkg_push "remmina nfs-common gddrescue gparted blueman synaptic preload etherwake wakeonlan"
+pkg_push "remmina nfs-common autofs gddrescue gparted blueman synaptic preload etherwake wakeonlan"
 
 # Development tools and applications
 pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
@@ -279,6 +279,13 @@ git clone https://github.com/shimmerproject/Greybird /usr/share/themes/Greybird
 
 # Configure Printer(s)
 lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?zc=xju-printer -L "Jason's Printer" -m drv:///hpcups.drv/hp-photosmart_5510_series.ppd && cupsenable "Jason-HP-Photosmart-5510-series" && cupsaccept "Jason-HP-Photosmart-5510-series"
+
+# Config NFS
+# https://help.ubuntu.com/community/SettingUpNFSHowTo
+if [ $HOSTNAME == "coolermaster" ]; then
+    echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
+    echo -e "*\t10.100.102.2:/zfs/homedirs/&" >> /etc/auto.home
+fi
 
 # End of script
 echo "################################################################################"
