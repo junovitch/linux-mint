@@ -248,6 +248,9 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 
+# Enable backports on Linux Mint Maya 13
+perl -pwi -e 's^deb http://packages.linuxmint.com/ maya main upstream import\n^deb http://packages.linuxmint.com/ maya main upstream import backport\n^' /etc/apt/sources.list
+
 # Update Package List
 apt-get -y update
 
