@@ -174,7 +174,7 @@ pkg_push "blender avidemux cheese devede mkvtoolnix mkvtoolnix-gui"
 pkg_push "kompozer bluefish mpack clamz"
 
 # Communication
-pkg_push "pidgin pidgin-otr pidgin-encryption" #skype
+pkg_push "pidgin pidgin-otr pidgin-encryption skype"
 
 # Virtualization
 pkg_push "virtualbox-qt virtualbox-guest-additions-iso gns3"
@@ -261,8 +261,8 @@ echo "##########################################################################
 # Run Main subroutine
 install_main
 
-wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
-dpkg -i /tmp/skype.deb; apt-get -f install | tee "$TEMPLOG"; RETVAL=$?; log; rm /tmp/skype.deb
+#wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
+#dpkg -i /tmp/skype.deb; apt-get -f install | tee "$TEMPLOG"; RETVAL=$?; log; rm /tmp/skype.deb
 
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
