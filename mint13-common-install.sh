@@ -274,6 +274,9 @@ apt-get update && apt-get install google-chrome-stable
 # Cleanup
 apt-get -y autoclean
 
+# Distupgrade to update kernel too
+apt-get -y dist-upgrade
+
 # Configure tmpfs in ramdisk
 config_tmpfs
 
