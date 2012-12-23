@@ -288,9 +288,18 @@ lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?z
 
 # Config NFS
 # https://help.ubuntu.com/community/SettingUpNFSHowTo
+#if [ $HOSTNAME == "coolermaster" ]; then
+#    echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
+#    echo -e "*\t10.100.102.2:/zfs/homedirs/&" >> /etc/auto.home
+#fi
+
+# Config NFSv4
+# https://help.ubuntu.com/community/SettingUpNFSHowTo
+# https://help.ubuntu.com/community/Autofs
 if [ $HOSTNAME == "coolermaster" ]; then
+    echo "NEED_IDMAPD=yes" >> /etc/default/nfs-common
     echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
-    echo -e "*\t10.100.102.2:/zfs/homedirs/&" >> /etc/auto.home
+    echo -e "*\t-fstype=nfs4\t10.100.102.2:/zfs/homedirs/&" >> /etc/auto.home
 fi
 
 # End of script
