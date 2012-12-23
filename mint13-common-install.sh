@@ -295,6 +295,7 @@ lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?z
 
 # Config NFSv4
 # https://help.ubuntu.com/community/SettingUpNFSHowTo
+# https://help.ubuntu.com/community/NFSv4Howto
 # https://help.ubuntu.com/community/Autofs
 if [ $HOSTNAME == "coolermaster" ]; then
     echo "NEED_IDMAPD=yes" >> /etc/default/nfs-common
