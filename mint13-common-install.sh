@@ -301,6 +301,7 @@ lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?z
 # https://help.ubuntu.com/community/Autofs
 if [ $HOSTNAME == "Coolermaster" ]; then
     echo "NEED_IDMAPD=yes" >> /etc/default/nfs-common
+    perl -pwi -e 's^# Domain = localdomain^Domain = mydomain.name^' /etc/idmapd.conf
     echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
     echo -e "*\t-fstype=nfs4\t10.100.102.2:/&" >> /etc/auto.home
 fi
