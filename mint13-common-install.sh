@@ -92,6 +92,8 @@ if [ $HOSTNAME == "Silverstone" ]; then
     # ZFS Support
     # sudo add-apt-repository ppa:zfs-native/stable
     # sudo apt-get update && sudo apt-get install ubuntu-zfs
+    # If there is a ZFS build issue, use manual dkms install procedures here
+    # https://github.com/zfsonlinux/zfs/issues/1155
     add-apt-repository -y ppa:zfs-native/stable
     PPAs=$PPAs" ubuntu-zfs"
 
