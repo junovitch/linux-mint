@@ -84,19 +84,65 @@ config_tmpfs() {
     cat /etc/fstab
 }
 
+install_ftp() {
+    ping -c 5 ftp
+    LOCAL_FTP=$?
+    if [ $LOCAL_FTP -eq 0 ]; then
+        SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
+        cd /tmp && wget ftp://ftp/pub/$SCM_PKG
+        tar xvzf /tmp/$SCM_PKG -C /tmp
+        cd /tmp/scmccid_5.0.21_linux/ && ./install.sh | tee "$TEMPLOG"
+        RETVAL=$?
+        PKG=$SCM_PKG
+        log
+
+        CACKEY="cackey0.6.5-1_amd64.deb"
+        mkdir /usr/lib64
+        cd /tmp && wget ftp://ftp/pub/$CACKEY
+        dpkg -i "$CACKEY" | tee "$TEMPLOG"
+        RETVAL=$?
+        PKG=$CACKEY
+        log
+
+        FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
+        firefox ftp://ftp/pub/$FIREFOX &
+        RETVAL=$?
+        PKG=$FIREFOX
+        log
+
+        KEYDB="KEYDB.cfg"
+        cd /tmp && wget ftp://ftp/pub/$KEYDB
+        mkdir /etc/skel/.config/aacs/ && mkdir ~/.config/aacs/
+        cp $KEYDB /etc/skel/.config/aacs/ && cp $KEYDB ~/.config/aacs/
+        RETVAL=$?
+        PKG=Bluray_$KEYDB
+        log
+
+        LIBAACS="libaacs.so.0"
+        cd /tmp && wget ftp://ftp/pub/$LIBAACS
+        mkdir /usr/lib64/ && cp $LIBAACS /usr/lib64/
+        RETVAL=$?
+        PKG=Bluray_$LIBAACS
+        log
+    fi
+}
+
+install_skype() {
+    wget -O /tmp/skype.deb http://www.skype.com/go/getskype-linux-beta-ubuntu-64
+    dpkg -i /tmp/skype.deb; apt-get -f install | tee "$TEMPLOG"; RETVAL=$?; log; rm /tmp/skype.deb
+}
+
+install_chrome() {
+    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+    sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+    apt-get update && apt-get install google-chrome-stable
+}
+
 ################################################################################
 ##  USER DEFINED PACKAGES  #####################################################
 ################################################################################
 
 if [ $HOSTNAME == "Silverstone" ]; then
-    # ZFS Support
-    # sudo add-apt-repository ppa:zfs-native/stable
-    # sudo apt-get update && sudo apt-get install ubuntu-zfs
-    # If there is a ZFS build issue, use manual dkms install procedures here
-    # https://github.com/zfsonlinux/zfs/issues/1155
-    add-apt-repository -y ppa:zfs-native/stable
-    PPAs=$PPAs" ubuntu-zfs"
-
     # NVIDIA
     # sudo apt-add-repository ppa:ubuntu-x-swat/x-updates
     # sudo apt-get update && sudo apt-get install nvidia-current nvidia-settings
@@ -114,6 +160,22 @@ if [ $HOSTNAME == "Silverstone" ]; then
     # BOINC
     pkg_push "boinc boinc-nvidia-cuda"
 fi
+
+if [ $HOSTNAME == "Coolermaster" ]; then
+    # NVIDIA
+    # sudo apt-add-repository ppa:ubuntu-x-swat/x-updates
+    # sudo apt-get update && sudo apt-get install nvidia-current nvidia-settings
+    add-apt-repository ppa:ubuntu-x-swat/x-updates
+    PPAs=$PPAs" nvidia-current nvidia-settings"
+fi
+
+# ZFS Support
+# sudo add-apt-repository ppa:zfs-native/stable
+# sudo apt-get update && sudo apt-get install ubuntu-zfs
+# If there is a ZFS build issue, use manual dkms install procedures here
+# https://github.com/zfsonlinux/zfs/issues/1155
+add-apt-repository -y ppa:zfs-native/stable
+PPAs=$PPAs" ubuntu-zfs"
 
 # Grub Customizer
 # sudo add-apt-repository ppa:danielrichter2007/grub-customizer
@@ -199,43 +261,6 @@ pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate"
 # PPAs installed last
 pkg_push "$PPAs"
 
-# 1. Install prerequisite packages, this is already covered in initial setup script
-#sudo apt-get install libpcsclite1 pcscd pcsc-tools
-
-# 2. Install card reader drivers.
-# http://support.identive-infrastructure.com/download_scm/download_scm.php?lang=1
-SCM_PKG="scmccid_linux_64bit_driver_V5.0.21.tar.gz"
-find /usr/local -name "$SCM_PKG" -print0 | xargs -0 cp -t /tmp 
-tar xvzf /tmp/$SCM_PKG -C /tmp
-cd /tmp/scmccid_5.0.21_linux/ && ./install.sh | tee "$TEMPLOG"
-RETVAL=$?
-PKG=$SCM_PKG
-log
-
-# 3. DISA software can be found below, both cackey and firefox_extensions are required (CAC Login required to download, get beforehand)
-# https://software.forge.mil/sf/frs/do/listReleases/projects.community_cac/frs.cackey
-## http://www.forge.mil/Resources-Firefox.html
-CACKEY="cackey0.6.5-1_amd64.deb"
-mkdir /usr/lib64
-find /usr/local -name "$CACKEY" -print0 | xargs -0 dpkg -i | tee "$TEMPLOG"
-RETVAL=$?
-PKG=$CACKEY
-log
-
-# Firefox Configs
-FIREFOX="firefox_extensions-dod_configuration-1.3.6.xpi"
-find /usr/local -name "$FIREFOX" -print0 | xargs -0 firefox
-RETVAL=$?
-PKG=$FIREFOX
-log
-
-# Put blu-ray support files in place (must be in /usr/local already)
-mkdir /etc/skel/.config/aacs/
-mkdir ~/.config/aacs/
-find /usr/local -name "KEYDB.cfg" -print0 | xargs -0 -I '{}' cp '{}' /etc/skel/.config/aacs/
-find /usr/local -name "KEYDB.cfg" -print0 | xargs -0 -I '{}' cp '{}' ~/.config/aacs/
-find /usr/local -name "libaacs.so.0" -print0 | xargs -0 -I '{}' cp '{}' /usr/lib64/
-
 ################################################################################
 ##  MAIN PROGRAM  ##############################################################
 ################################################################################
@@ -259,6 +284,9 @@ apt-get -y update
 # Update all base system packages
 apt-get -y upgrade
 
+# Distupgrade to update kernel too
+apt-get -y dist-upgrade
+
 echo "################################################################################"
 echo "Done, install user programs" 
 echo "################################################################################"
@@ -266,34 +294,25 @@ echo "##########################################################################
 # Run Main subroutine
 install_main
 
-#wget -O /tmp/skype.deb  http://download.skype.com/linux/skype-ubuntu_4.0.0.8-1_amd64.deb
-#dpkg -i /tmp/skype.deb; apt-get -f install | tee "$TEMPLOG"; RETVAL=$?; log; rm /tmp/skype.deb
+install_ftp
 
-wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-apt-get update && apt-get install google-chrome-stable
+install_skype
+
+install_chrome
 
 # Cleanup
 apt-get -y autoclean
 
-# Distupgrade to update kernel too
-apt-get -y dist-upgrade
+echo "################################################################################"
+echo "Installation Completed"
+echo
+echo "Beginning Local Configuration"
+
+# Get themes
+git clone https://github.com/shimmerproject/Greybird /usr/share/themes/Greybird && echo "[  OK   ] - Greybird theme downloaded"
 
 # Configure tmpfs in ramdisk
 config_tmpfs
-
-# Get themes
-git clone https://github.com/shimmerproject/Greybird /usr/share/themes/Greybird
-
-# Configure Printer(s)
-lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?zc=xju-printer -L "Jason's Printer" -m drv:///hpcups.drv/hp-photosmart_5510_series.ppd && cupsenable "Jason-HP-Photosmart-5510-series" && cupsaccept "Jason-HP-Photosmart-5510-series"
-
-# Config NFS
-# https://help.ubuntu.com/community/SettingUpNFSHowTo
-#if [ $HOSTNAME == "Coolermaster" ]; then
-#    echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
-#    echo -e "*\t10.100.102.2:/zfs/homedirs/&" >> /etc/auto.home
-#fi
 
 # Config NFSv4
 # https://help.ubuntu.com/community/SettingUpNFSHowTo
@@ -304,17 +323,48 @@ if [ $HOSTNAME == "Coolermaster" ]; then
     perl -pwi -e 's^# Domain = localdomain^Domain = mydomain.name^' /etc/idmapd.conf
     echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
     echo -e "*\t-fstype=nfs4\t10.100.102.2:/&" >> /etc/auto.home
+    echo "[  OK   ] - AutoFS for NFSv4 Mounts configured"
 fi
 
-# End of script
-echo "################################################################################"
-echo "Installation Completed"
+# Configure Printer(s)
+lpadmin -p "Jason-HP-Photosmart-5510-series" -v hp:/net/Photosmart_5510_series?zc=xju-printer -L "Jason's Printer" -m drv:///hpcups.drv/hp-photosmart_5510_series.ppd && cupsenable "Jason-HP-Photosmart-5510-series" && cupsaccept "Jason-HP-Photosmart-5510-series" && echo "[  OK   ] - Jason's HP Photosmart 5510 series configured"
+
+echo "Done"
 echo
 echo "Successfully installed:"
 cat $SUCCESSLOG
 echo
 echo "Failures"
 cat $FAILBRIEF
-echo 
+if [ $LOCAL_FTP -ne 0 ]; then
+   echo "################################################################################"
+   echo
+   echo "The local FTP server wasn't reachable, the following steps may be required."
+   echo
+   echo "Smart card support:"
+   echo
+   echo "Prerequisites (already installed by script):"
+   echo "sudo apt-get install libpcsclite1 pcscd pcsc-tools"
+   echo
+   echo "1.  Install smart card reader drivers"
+   echo "Visit http://support.identive-infrastructure.com/download_scm/download_scm.php?lang=1"
+   echo "Download the appropriate package. (Change package names as needed)"
+   echo "tar xvzf $SCM_PKG -C /tmp"
+   echo "cd /tmp/scmccid_5.0.21_linux/ && ./install.sh"
+   echo
+   echo "2.  Install DISA Cackey software (CAC support already required to go to website)"
+   echo "Visit https://software.forge.mil/sf/frs/do/listReleases/projects.community_cac/frs.cackey"
+   echo "Download and unzip the Cackey software"
+   echo "dpkg -i $CACKEY"
+   echo
+   echo "3.  Install the Firefox CAC extension."
+   echo "Visit http://www.forge.mil/Resources-Firefox.html"
+   echo "Download and run the extension"
+   echo
+   echo "Bluray Support: (not finalized)"
+   echo "Visit http://vlc-bluray.whoknowsmy.name/"
+   echo "Follow instructions on the site"
+   echo
+fi
 echo "Please restart your session to complete."
 echo "################################################################################"
