@@ -255,8 +255,12 @@ pkg_push "lsb-core googleearth"
 # Codecs
 pkg_push "ffmpeg flac libmad0 totem-mozilla icedax id3tool id3v2 lame libquicktime2 sox tagtool faac libdvdcss2 libdvdnav4 libdvdread4"
 
-# Alt Desktops/WMs
-pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate"
+# Alt Desktops/WMs for Linux Mint only
+lsb_release -d | grep "Mint"
+RETVAL=$?
+if [ $RETVAL -eq 0 ]; then
+    pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate"
+fi
 
 # PPAs installed last
 pkg_push "$PPAs"
