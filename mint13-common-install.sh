@@ -75,11 +75,11 @@ config_tmpfs() {
     egrep '/tmp' /etc/fstab > /dev/null
     RETVAL=$?
     if [ $RETVAL -eq 0 ]; then
-        echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs" >> $FAILBRIEF
+        echo "[ SKIP  ] - /tmp and /var/tmp already configured for tmpfs"
     else
         echo -e "none\t\t/tmp\t\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
         echo -e "none\t\t/var/tmp\ttmpfs\trw,nosuid,nodev,mode=01777\t0\t0" >> /etc/fstab
-        echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk" >> $FAILBRIEF
+        echo "[  OK   ] - /tmp and /var/tmp configured for tmpfs ramdisk"
     fi
     cat /etc/fstab
 }
@@ -96,7 +96,7 @@ install_ftp() {
         PKG=$SCM_PKG
         log
 
-        CACKEY="cackey0.6.5-1_amd64.deb"
+        CACKEY="cackey_0.6.5-1_amd64.deb"
         mkdir /usr/lib64
         cd /tmp && wget ftp://ftp/pub/$CACKEY
         dpkg -i "$CACKEY" | tee "$TEMPLOG"
@@ -120,7 +120,8 @@ install_ftp() {
 
         LIBAACS="libaacs.so.0"
         cd /tmp && wget ftp://ftp/pub/$LIBAACS
-        mkdir /usr/lib64/ && cp $LIBAACS /usr/lib64/
+        mkdir /usr/lib64/
+        cp $LIBAACS /usr/lib64/
         RETVAL=$?
         PKG=Bluray_$LIBAACS
         log
@@ -238,7 +239,7 @@ pkg_push "blender avidemux cheese devede mkvtoolnix mkvtoolnix-gui"
 pkg_push "kompozer bluefish mpack clamz"
 
 # Communication
-pkg_push "pidgin pidgin-otr pidgin-encryption skype"
+pkg_push "pidgin pidgin-otr pidgin-encryption" #skype
 
 # Virtualization
 pkg_push "virtualbox-qt virtualbox-guest-additions-iso gns3"
