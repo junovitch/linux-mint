@@ -212,7 +212,7 @@ pkg_push "shotwell gimp gimp-data gimp-data-extras pinta mypaint hugin"
 pkg_push "tmux tcsh terminator zsh zsh-doc htop"
 
 # System Applications
-pkg_push "remmina nfs-common autofs gddrescue gparted blueman synaptic preload etherwake wakeonlan"
+pkg_push "gconf-editor remmina nfs-common autofs gddrescue gparted blueman synaptic preload etherwake wakeonlan"
 
 # Development tools and applications
 pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
@@ -233,7 +233,7 @@ pkg_push "vlc banshee banshee-extension-ampache"
 pkg_push "audacity pavucontrol"
 
 # Video Tools
-pkg_push "blender avidemux cheese devede mkvtoolnix mkvtoolnix-gui"
+pkg_push "openshot blender avidemux cheese devede mkvtoolnix mkvtoolnix-gui"
 
 # Web Applications
 pkg_push "kompozer bluefish mpack clamz"
@@ -260,7 +260,7 @@ pkg_push "ffmpeg flac libmad0 totem-mozilla icedax id3tool id3v2 lame libquickti
 lsb_release -d | grep "Mint"
 RETVAL=$?
 if [ $RETVAL -eq 0 ]; then
-    pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate"
+    pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate mint-meta-kde"
 fi
 
 # PPAs installed last
