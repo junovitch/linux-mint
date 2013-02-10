@@ -195,6 +195,10 @@ PPAs=$PPAs" handbrake-gtk"
 add-apt-repository ppa:webupd8team/jupiter
 PPAs=$PPAs" jupiter"
 
+# KDE 4.10 backport
+add-apt-repository ppa:kubuntu-ppa/backports
+PPAs=$PPAs" kubuntu-desktop"
+
 # Security
 pkg_push "clamav clamtk ecryptfs-utils gufw fail2ban chkrootkit openssh-server ssh-import-id openssh-blacklist openssh-blacklist-extra openvpn kismet wireshark tshark nmap putty"
 
