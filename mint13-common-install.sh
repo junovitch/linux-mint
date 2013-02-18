@@ -331,9 +331,7 @@ if [ $HOSTNAME == "Coolermaster" ]; then
     echo "NEED_IDMAPD=yes" >> /etc/default/nfs-common
     perl -pwi -e 's^# Domain = localdomain^Domain = mydomain.name^' /etc/idmapd.conf
     echo -e "/zfs/homedirs\t/etc/auto.home" >> /etc/auto.master
-    echo -e "/usr/home\t/etc/auto.usrhome" >> /etc/auto.master
     echo -e "*\t-fstype=nfs4\t10.100.102.2:/zfs/homedirs/&" >> /etc/auto.home
-    echo -e "*\t-fstype=nfs4\t10.100.102.2:/usr/home/&" >> /etc/auto.usrhome
     echo "[  OK   ] - AutoFS for NFSv4 Mounts configured"
 fi
 
