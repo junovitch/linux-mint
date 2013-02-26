@@ -219,7 +219,7 @@ pkg_push "tmux tcsh terminator zsh zsh-doc htop"
 pkg_push "gconf-editor remmina nfs-common autofs gddrescue gparted blueman synaptic preload etherwake wakeonlan"
 
 # Development tools and applications
-pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
+pkg_push "build-essential check checkinstall cdbs devscripts dh-make fakeroot geany geany-plugins libxml-parser-perl perl-tk subversion git git-core sharutils uudeview vim vim-gnome vim-doc vim-scripts vim-latexsuite"
 
 # Java
 pkg_push "openjdk-7-jre icedtea-7-plugin"
