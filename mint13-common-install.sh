@@ -264,7 +264,7 @@ pkg_push "ffmpeg flac libmad0 totem-mozilla icedax id3tool id3v2 lame libquickti
 lsb_release -d | grep "Mint"
 RETVAL=$?
 if [ $RETVAL -eq 0 ]; then
-    pkg_push "unity xmonad mint-meta-cinnamon mint-meta-mate mint-meta-kde"
+    pkg_push "unity xmonad mint-meta-cinnamon mint-meta-kde"
 fi
 
 # PPAs installed last
